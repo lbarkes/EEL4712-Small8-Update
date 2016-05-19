@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity mux4x2 is
   generic (
-    width  => width);
+    width  :     positive := 32);
   port (
     in1    : in  std_logic_vector(width-1 downto 0);
     in2    : in  std_logic_vector(width-1 downto 0);
@@ -15,6 +15,8 @@ end mux4x2;
 
 architecture BHV of mux4x2 is
 begin
+process(in1, in2, sel)
+begin
   if(sel = "00") then
 	output <= in1;
   elsif(sel = "01") then
@@ -24,4 +26,5 @@ begin
   else
 	output <= in4;
   end if;
+end process;
 end BHV;

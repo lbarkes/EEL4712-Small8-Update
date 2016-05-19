@@ -15,7 +15,7 @@ entity datapath is
 	write_data_sel : in std_logic;
 	mem_sel : in std_logic;
 	ALU_opcode : in std_logic_vector(5 downto 0); 
-	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable : in std_logic;
+	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable : in std_logic
   );
 
 end datapath;
@@ -25,7 +25,7 @@ architecture STR of datapath is
 signal  WRreg_out : std_logic_vector(4 downto 0);
 signal  IR_out, PC_out, A_MUX_out, B_MUX_out, alu_reg_out, PC_MUX_out, sign_extend_out           : std_logic_vector(31 downto 0);
 signal  alu_out, A_out, B_out, regfileout1, regfileout2, MemoryRegOut, WRdata_out            : std_logic_vector(31 downto 0);
-signal  b_mux_in : std_logic_vector(31 downto 0);
+signal  b_mux_in, PC_mux_in : std_logic_vector(31 downto 0);
 begin
 
   U_PC : entity work.reg32
@@ -51,7 +51,7 @@ begin
       clk      	=> clk,
       rst      	=> rst,
 	  en		=> Aen,
-      input    	=> regfileout1
+      input    	=> regfileout1,
       output   	=> A_out
     );
 
@@ -60,7 +60,7 @@ begin
       clk      	=> clk,
       rst      	=> rst,
 	  en		=> Ben,
-      input    	=> regfileout2
+      input    	=> regfileout2,
       output   	=> B_out
     );
 	
@@ -74,8 +74,6 @@ begin
     );
 	
   U_A_MUX : entity work.mux2x1
-  generic ( 
-    width => 32)
   port map (
 	  in1    	=> PC_out,
       in2    	=> A_out,
@@ -86,32 +84,28 @@ begin
   b_mux_in <= sign_extend_out(29 downto 0) & "00";
   
   U_B_MUX : entity work.mux4x2
-  generic ( 
-    width => 32)
   port map (
 	  in1    	=> b_out,
-      in2    	=> 
-	  in3    	=> sign_extend_out
+      in2    	=> "00000000000000000000000000000100", --0004
+	  in3    	=> sign_extend_out,
       in4    	=> b_mux_in,
       sel    	=> b_sel,
       output 	=> B_MUX_out
   );
   
-  U_PC_MUX : entity work.mux2x1
-  generic ( 
-    width => 32)
+  PC_mux_in <= "0000" & IR_out(25 downto 0) & "00";
+  
+  U_PC_MUX : entity work.mux4x2
   port map (
-	  in1    	=> 			--EPC
+	  in1    	=> "00000000000000000000000000000000",		--EPC
       in2    	=> alu_reg_out,
-	  in3    	=> 
-      in4    	=> "00000000000000000000000000000000";
+	  in3    	=> PC_mux_in,
+      in4    	=> "00000000000000000000000000000000",
       sel    	=> pc_sel,
       output 	=> PC_MUX_out
   );
   
   U_WRdata_MUX : entity work.mux2x1
-  generic ( 
-    width => 32)
   port map (
 	  in1    	=> alu_reg_out,
       in2    	=> MemoryRegOut,
@@ -119,9 +113,7 @@ begin
       output 	=> WRdata_out
   );
   
-  U_WRreg_MUX : entity work.mux2x1
-  generic ( 
-    width => 5)
+  U_WRreg_MUX : entity work.mux2x1_5bit
   port map (
 	  in1    	=> IR_out(20 downto 16),
       in2    	=> IR_out(15 downto 11),
@@ -130,7 +122,7 @@ begin
   );
   
   U_regfile : entity work.register_file
-  port(
+  port map (
     outA        => regfileout1,
     outB        => regfileout2,
     input       => MemoryRegOut,
