@@ -12,10 +12,10 @@ entity datapath is
 	b_sel : in std_logic_vector(1 downto 0);
 	pc_sel : in std_logic_vector(1 downto 0);
 	write_reg_sel : in std_logic;
-	write_data_sel : in std_logic;
+	write_data_sel : in std_logic_vector(1 downto 0);
 	mem_sel : in std_logic;
 	ALU_opcode : in std_logic_vector(5 downto 0); 
-	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable : in std_logic
+	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable, LOen, HIen : in std_logic
   );
 
 end datapath;
@@ -24,7 +24,7 @@ architecture STR of datapath is
 
 signal  WRreg_out : std_logic_vector(4 downto 0);
 signal  IR_out, PC_out, A_MUX_out, B_MUX_out, alu_reg_out, PC_MUX_out, sign_extend_out           : std_logic_vector(31 downto 0);
-signal  alu_out, A_out, B_out, regfileout1, regfileout2, MemoryRegOut, WRdata_out            : std_logic_vector(31 downto 0);
+signal  alu_out, A_out, B_out, regfileout1, regfileout2, MemoryRegOut, WRdata_out, HI_out, LO_out            : std_logic_vector(31 downto 0);
 signal  b_mux_in, PC_mux_in : std_logic_vector(31 downto 0);
 begin
 
@@ -44,6 +44,24 @@ begin
 	  en		=> IRen,
       input    	=> input,
       output   	=> IR_out
+    );
+	
+  U_HI : entity work.reg32
+  port map (
+      clk      	=> clk,
+      rst      	=> rst,
+	  en		=> HIen,
+      input    	=> alu_out,
+      output   	=> HI_out
+    );
+	
+  U_LO : entity work.reg32
+  port map (
+      clk      	=> clk,
+      rst      	=> rst,
+	  en		=> LOen,
+      input    	=> alu_out,
+      output   	=> LO_out
     );
 	
   U_A : entity work.reg32
@@ -105,10 +123,12 @@ begin
       output 	=> PC_MUX_out
   );
   
-  U_WRdata_MUX : entity work.mux2x1
+  U_WRdata_MUX : entity work.mux4x2
   port map (
 	  in1    	=> alu_reg_out,
       in2    	=> MemoryRegOut,
+	  in3		=> HI_out,
+	  in4		=> LO_out,
       sel    	=> write_data_sel,
       output 	=> WRdata_out
   );
@@ -125,7 +145,7 @@ begin
   port map (
     outA        => regfileout1,
     outB        => regfileout2,
-    input       => MemoryRegOut,
+    input       => WRdata_out,
     writeEnable => writeEnable,
     regASel     => IR_out(25 downto 21),
     regBSel     => IR_out(20 downto 16),
@@ -138,6 +158,7 @@ begin
       input1	=> A_MUX_out,
 	  input2	=> B_MUX_out,
 	  sel		=> ALU_opcode,
+	  shift 	=> IR_out(10 downto 6),
 	  output	=> alu_out
   );
   
