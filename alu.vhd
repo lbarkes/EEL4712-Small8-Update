@@ -11,6 +11,8 @@ input2 : in std_logic_vector(WIDTH-1 downto 0);
 sel : in std_logic_vector(5 downto 0);
 output : out std_logic_vector(WIDTH-1 downto 0)
 shift : in std_logic_vector(4 downto 0);
+Z : out std_logic;
+S : out std_logic;
 );
 end alu;
 

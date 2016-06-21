@@ -8,7 +8,8 @@ entity controller is
     clk   : in  std_logic;
     rst   : in  std_logic;
 	data  : in  std_logic_vector(width-1 downto 0);
-
+    S	  : in std_logic;
+	Z 	  : in std_logic;
 
     -- control signals to/from datapath
 	wr : out std_logic;
