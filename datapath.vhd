@@ -11,11 +11,13 @@ entity datapath is
 	a_sel : in std_logic;
 	b_sel : in std_logic_vector(1 downto 0);
 	pc_sel : in std_logic_vector(1 downto 0);
-	write_reg_sel : in std_logic;
+	write_reg_sel : in std_logic_vector(1 downto 0);
 	write_data_sel : in std_logic_vector(1 downto 0);
 	mem_sel : in std_logic;
 	ALU_opcode : in std_logic_vector(5 downto 0); 
-	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable, LOen, HIen : in std_logic
+	WRregin : in std_logic_vector(4 downto 0);
+	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable, LOen, HIen, PCOUT_sel : in std_logic
+	ADDRESS : out std_logic_vector(31 downto 0);
   );
 
 end datapath;
@@ -137,6 +139,7 @@ begin
   port map (
 	  in1    	=> IR_out(20 downto 16),
       in2    	=> IR_out(15 downto 11),
+	  in3       => WRregin,
       sel    	=> write_reg_sel,
       output 	=> WRreg_out
   );
@@ -176,5 +179,13 @@ begin
       input    	=> IR_out(15 downto 0),
       output   	=> sign_extend_out
     );
+	
+  U_PCOUT_MUX : entity work.mux2x1
+  port map (
+	  in1    	=> PC_out,
+      in2    	=> alu_reg_out,
+      sel    	=> PCOUT_sel,
+      output 	=> ADDRESS
+  );
 	
 end STR;

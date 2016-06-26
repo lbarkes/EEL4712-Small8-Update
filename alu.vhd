@@ -66,7 +66,14 @@ begin
 			end if;
 		when others => 
 			temp := unsigned(input1);
+			
 	end case;
+	if (temp = 0) then
+		Z <= '1';
+	else
+		Z <= '0';
+	end if;
+	S <= temp(width-1);
 	output <= std_logic_vector(temp);
    end process;
 end logic;
