@@ -4,4 +4,4 @@ Datapath: total: 3.75 hours
 5/18/16 12pm - 3pm 
 5/19/16 4:45pm - 5:30pm
 
-Controller: 3 hours
+Controller: 6 hours

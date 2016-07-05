@@ -174,19 +174,28 @@ begin  -- FSM_2P
 				Aen <= '1';
 				next_state <= SW1;
 			when "100000" => --LB
-			
+				Aen <= '1';
+				next_state <= LW1;
 			when "100100" => --LBU
-			
+				Aen <= '1';
+				next_state <= LW1;
 			when "101000" => --SB
-			
+				Ben <= '1';
+				Aen <= '1';
+				next_state <= SW1;
 			when "100001" => --LH
-			
+				Aen <= '1';
+				next_state <= LW1;
 			when "100101" => --LHU
-			
+				Aen <= '1';
+				next_state <= LW1;
 			when "101001" => --SH
-			
+				Ben <= '1';
+				Aen <= '1';
+				next_state <= SW1;
 			when "100111" => --LWU
-			
+				Aen <= '1';
+				next_state <= LW1;
 			when "000100" => --BEQ
 				Aen <= '1';
 				Ben <= '1';
