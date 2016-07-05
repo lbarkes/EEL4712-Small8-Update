@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity datapath is
   generic (
@@ -17,7 +18,7 @@ entity datapath is
 	ALU_opcode : in std_logic_vector(5 downto 0); 
 	WRregin : in std_logic_vector(4 downto 0);
 	Aen, Ben, PCen, IRen, MemRegen, ALUen, writeEnable, LOen, HIen, PCOUT_sel : in std_logic
-	ADDRESS : out std_logic_vector(31 downto 0);
+	--ADDRESS : out std_logic_vector(31 downto 0)
   );
 
 end datapath;
@@ -184,8 +185,8 @@ begin
   port map (
 	  in1    	=> PC_out,
       in2    	=> alu_reg_out,
-      sel    	=> PCOUT_sel,
-      output 	=> ADDRESS
+      sel    	=> PCOUT_sel
+      --output 	=> ADDRESS
   );
 	
 end STR;

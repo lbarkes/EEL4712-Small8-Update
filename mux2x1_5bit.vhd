@@ -18,7 +18,7 @@ process(in1, in2, sel)
 begin
   if(sel = "00") then
 	output <= in1;
-  elsif(sel = "01")
+  elsif(sel = "01") then
 	output <= in2;
   else
     output <= in3;

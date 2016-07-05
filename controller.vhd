@@ -13,7 +13,7 @@ entity controller is
 
     -- control signals to/from datapath
 	PCOUT_sel : out std_logic;
-	wr : out std_logic;
+	wr, rd : out std_logic;
 	a_sel : out std_logic;
 	b_sel : out std_logic_vector(1 downto 0);
 	pc_sel : out std_logic_vector(1 downto 0);
@@ -28,7 +28,7 @@ end controller;
 
 architecture FSM_2P of controller is
 
-  type STATE_TYPE is (INIT, FETCH, IR, ADDU1, ADDU2, SUBU1, SUBU2, AND1, AND2, OR1, OR2, XOR1, XOR2, ADDIU1, ADDIU2, ANDI1, ANDI2, ORI1, ORI2, XORI1, XORI2, SRL1, SRL2, SLL1, SLL2, SLT1, SLT2, SLTU1, SLTU2, SLTI1, SLTI2, SLTIU1, SLTIU2, MULT, MULTU1, JR1, JR2, JAL1, BEQ1, BEQ2, BEQ3, BNE1, BNE2, BNE3, BLEZ1, BLEZ2, BLEZ3, BGTZ1, BGTZ2, BGTZ3, BLTZ1, BLTZ2, BLTZ3, BGEZ1, BGEZ2, BGEZ3, LW1, LW2, LW3, LW4, SW1, SW2, SW3, SW4);
+  type STATE_TYPE is (INIT, FETCH, IR, ADDU1, ADDU2, SUBU1, SUBU2, AND1, AND2, OR1, OR2, XOR1, XOR2, ADDIU1, ADDIU2, ANDI1, ANDI2, ORI1, ORI2, XORI1, XORI2, SRL1, SRL2, SLL1, SLL2, SLT1, SLT2, SLTU1, SLTU2, SLTI1, SLTI2, SLTIU1, SLTIU2, MULT, MULTU1, JR1, JR2, JAL1, BEQ1, BEQ2, BEQ3, BNE1, BNE2, BNE3, BLEZ1, BLEZ2, BLEZ3, BGTZ1, BGTZ2, BGTZ3, BLTZ1, BLTZ2, BLTZ3, BGEZ1, BGEZ2, BGEZ3, LW1, LW2, LW3, LW4, SW1, SW2, SW3, SW4, mult1, PCINC, PCINC2);
   signal state, next_state : STATE_TYPE;
 
 begin  -- FSM_2P
@@ -42,7 +42,7 @@ begin  -- FSM_2P
     end if;
   end process;
 
-  process(go, count_done, state)
+  process(state, next_state)
   begin
 
     -- default values
@@ -137,7 +137,7 @@ begin  -- FSM_2P
 						writeEnable <= '1';		--write enable
 						next_state <= PCINC;
 					when "001000" => --JR
-						Aen => '1';
+						Aen <= '1';
 						next_state <= JR1;
 					
 					when others => 
@@ -199,40 +199,40 @@ begin  -- FSM_2P
 			when "000100" => --BEQ
 				Aen <= '1';
 				Ben <= '1';
-				next_state => BEQ1;
+				next_state <= BEQ1;
 			when "000101" => --BNE
 				Aen <= '1';
 				Ben <= '1';
-				next_state => BNE1;
+				next_state <= BNE1;
 			when "000110" => --BLEZ
 				Aen <= '1';
 				Ben <= '1';
-				next_state => BLEZ1;
+				next_state <= BLEZ1;
 			when "000111" => --BGTZ
 				Aen <= '1';
 				Ben <= '1';
-				next_state => BGTZ1;
+				next_state <= BGTZ1;
 			when "000001" => 
 				case data(20 downto 16) is
 					when "00000" => --BLTZ
 						Aen <= '1';
 						Ben <= '1';
-						next_state => BLTZ1;
+						next_state <= BLTZ1;
 					when "00001" => --BGEZ
 						Aen <= '1';
 						Ben <= '1';
-						next_state => BGEZ1;
+						next_state <= BGEZ1;
 					when others => 
 						next_state <= INIT;
 				end case;
 			
 			when "000010" => --j
 				pc_sel <= "10";
-				PCen <= "1";
+				PCen <= '1';
 				next_state <= FETCH;
 			when "000011" => --JAL
 				pc_sel <= "10";
-				PCen <= "1";
+				PCen <= '1';
 				a_sel <= '0';
 				b_sel <= "01";
 				ALUen <= '1';
@@ -600,7 +600,7 @@ begin  -- FSM_2P
 		
 	  when LW1 =>
 	    a_sel <= '1';
-		b_sel <= "11"
+		b_sel <= "11";
 		ALUen <= '1';
 		ALU_opcode <= "000000";
 		next_state <= LW2;
@@ -614,8 +614,8 @@ begin  -- FSM_2P
 		next_state <= LW4;
 	  
 	  when LW4 => 
-	    write_data_sel <= '1';
-		write_reg_sel <= '0';
+	    write_data_sel <= "01";
+		write_reg_sel <= "00";
 		writeEnable <= '1';
 		next_state <= PCINC;
 	
@@ -636,9 +636,19 @@ begin  -- FSM_2P
 		next_state <= SW4;
 	
 	  when SW4 =>
-	    next_state => PCINC;
+	    next_state <= PCINC;
 		
 	  when PCINC => --need to add
+		ALU_opcode <= "000000";
+		a_sel <= '0';
+		b_sel <= "01";
+		ALUen <= '1';
+		next_state <= PCINC2;
+	
+	  when PCINC2 => 
+	    pc_sel <= "01";
+		PCen <= '1';
+		next_state <= FETCH;
 	    
       when others => null;
     end case;
